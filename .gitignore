@@ -93,16 +93,15 @@ yarn-error.log
 .history/*
 
 # Miscellaneous
-/.angular/cache
+.angular
 .sass-cache/
-/connect.lock
-/coverage
-/libpeerconnection.log
+connect.lock
+coverage
+libpeerconnection.log
 testem.log
-/typings
+typings
 __screenshots__/
 
 # System files
 .DS_Store
 Thumbs.db
-client/node_modules/.bin/architect
