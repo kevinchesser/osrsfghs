@@ -1,3 +1,3 @@
-# osrsgfhs - old school runescape friend group high scores
+aspnetcore 10 server for tracking my friend group's runescape progress
 
-High scores just for your you and your friends
+c#, sqlite
