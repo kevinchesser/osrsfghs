@@ -76,7 +76,7 @@ namespace Osrsfghs.Modules
             }
 
             Character targetCharacter = characterEnumerable.First();
-            string processingTime = processingDateTimeUtc.ToString("yyyy-MM-dd HH:mm:ss.fff"); //ISO-8601 format
+            string processingTime = processingDateTimeUtc.ToString("O"); //ISO-8601 format
             await _highScoreService.ProcessHighScoresForCharacter(targetCharacter, processingTime);
             _characterUpdateRateLimit[characterName] = processingDateTimeUtc.AddMinutes(5);
             await Context.Interaction.SendResponseAsync(

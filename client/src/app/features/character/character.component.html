@@ -1,7 +1,7 @@
 @if (characterOverview(); as overview) {
   @if (overview.character) {
     <div class="flex gap-6 p-6">
-      <!-- LEFT: 1/3 width — stats table -->
+      <!-- LEFT: table -->
       <div class="w-1/3">
         <h1 class="text-xl font-semibold text-white mb-4">Stats for {{ name() }}</h1>
 
@@ -19,7 +19,12 @@
               @for (item of xpDropsBySkillMap(); track item[0]) {
                 @let skillId = item[0];
                 @let xpDrops = item[1];
-                <tr class="hover:bg-white/5 transition-colors">
+                <tr
+                  (click)="selectSkill(skillId)"
+                  class="cursor-pointer transition-colors"
+                  [class.bg-indigo-500/20]="selectedSkillId() === skillId"
+                  [class.hover:bg-white/5]="selectedSkillId() !== skillId"
+                >
                   <td class="px-4 py-2">
                     <div class="flex items-center gap-2">
                       <img [src]="getSkillIconPath(skillId)" class="h-5 w-5" />
@@ -36,9 +41,20 @@
         </div>
       </div>
 
-      <!-- RIGHT: 2/3 width — reserved for xp chart -->
+      <!-- RIGHT: chart -->
       <div class="w-2/3">
-        <!-- chart component goes here -->
+        <div class="flex items-center gap-2 mb-4">
+          <img [src]="getSkillIconPath(selectedSkillId())" class="h-6 w-6" />
+          <h2 class="text-lg font-semibold text-white">{{ getSkillName(selectedSkillId()) }}</h2>
+        </div>
+
+        <div class="h-96">
+          <osrsfghs-chart
+            [type]="'line'"
+            [data]="chartData()"
+            [options]="chartOptions"
+          />
+        </div>
       </div>
     </div>
   }

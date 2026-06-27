@@ -53,7 +53,7 @@ namespace Osrsfghs.Services
 
             async Task DoWorkAsync()
             {
-                string processingTime = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"); //ISO-8601 format
+                string processingTime = DateTime.UtcNow.ToString("O"); //ISO-8601 format
                 using SemaphoreSlim semaphore = new SemaphoreSlim(initialCount: 5);
 
                 IEnumerable<Task> tasks = _trackedCharacterStore.GetTrackedCharacters()
