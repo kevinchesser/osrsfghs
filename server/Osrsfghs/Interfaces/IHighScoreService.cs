@@ -14,5 +14,6 @@ namespace Osrsfghs.Interfaces
         Task<TimespanXpLeaderboardViewModel> GetLastXTimeSpanOverallXpLeadboard(TimeSpan lookbackTimeSpan);
         Task<CharacterOverview> GetCharacterOverview(string characterName);
         Task ProcessHighScoresForCharacter(Character character, string processingTime);
+        Task UpdateAvatarUrlAsync(int characterId, string avatarUrl);
     }
 }

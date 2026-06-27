@@ -64,6 +64,7 @@ void ConfigureHostedServices()
     services.AddHostedService<TrackedCharacterBackgroundService>();
     services.AddHostedService<HighScoreUpdateBackgroundService>();
     services.Configure<HighScoreUpdateBackgroundServiceOptions>(configuration.GetSection("HighScoreUpdateBackgroundService"));
+    services.AddHostedService<AvatarRefreshBackgroundService>();
 }
 
 void ConfigureHttpClients()

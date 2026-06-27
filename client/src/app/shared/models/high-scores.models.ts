@@ -24,4 +24,5 @@ export interface CharacterOverview {
 export interface Character {
     name: string
     discordUserId: string
+    avatarUrl?: string // populate this once the backend job above is in place
 }

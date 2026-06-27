@@ -15,6 +15,7 @@ import { toLocalDate } from '../../shared/utils/date.utils';
 })
 export class CharacterComponent {
   protected readonly name = input.required<string>();
+  protected readonly decodedName = computed(() => decodeURIComponent(this.name()));
   private readonly highScoreApiService = inject(HighScoreApiService);
   public characterOverview: WritableSignal<CharacterOverview | null> = signal(null);
 

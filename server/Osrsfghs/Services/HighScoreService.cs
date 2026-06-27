@@ -27,17 +27,13 @@ namespace Osrsfghs.Services
         public async Task<CharacterOverview> GetCharacterOverview(string characterName)
         {
             CharacterOverview characterOverview = new CharacterOverview();
-            int characterId = await _highScoreRepository.GetCharacterId(characterName);
-            if(characterId == -1)
+            Character character = await _highScoreRepository.GetCharacter(characterName);
+            if(character.Id == -1)
                 throw new CharacterNotFoundException($"{characterName} is not being tracked");
 
-            List<XpDrop> allXpDropsForCharacter = await _highScoreRepository.GetAllXpDropsAndFallbackIfNoXpDropWithinCutoff(characterId, DateTime.UtcNow - OneWeekTimeSpan);
+            List<XpDrop> allXpDropsForCharacter = await _highScoreRepository.GetAllXpDropsAndFallbackIfNoXpDropWithinCutoff(character.Id, DateTime.UtcNow - OneWeekTimeSpan);
 
-            characterOverview.Character = new Character()
-            {
-                Name = characterName,
-                Id = characterId
-            };
+            characterOverview.Character = character;
             characterOverview.XpDropsBySkill = allXpDropsForCharacter.GroupBy(x => x.SkillId).ToDictionary(x => x.Key, y => y.OrderByDescending(x => x.TimeStamp).ToList());
 
             return characterOverview;
@@ -124,6 +120,11 @@ namespace Osrsfghs.Services
             OsrsCharacterStats osrsCharacterStats = await _oldSchoolRunescapeApiClient.GetOsrsCharacterStats(character.Name);
             Dictionary<int, OsrsSkill> osrsCharacterStatDictionary = osrsCharacterStats.Skills.ToDictionary(x => x.Id, y => y);
             await RecordXpDropsIfNecessary(character, osrsCharacterStatDictionary, processingTime);
+        }
+
+        public async Task UpdateAvatarUrlAsync(int characterId, string avatarUrl)
+        {
+            await _highScoreRepository.UpdateAvatarUrlAsync(characterId, avatarUrl);
         }
     }
 }

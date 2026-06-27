@@ -15,16 +15,16 @@ namespace Osrsfghs.Repositories
             _options = options.Value;
         }
 
-        public async Task<int> GetCharacterId(string characterName)
+        public async Task<Character> GetCharacter(string characterName)
         {
-            int characterId = -1;
+            Character character = new Character() { Name = characterName };
 
             using(SQLiteConnection connection = new SQLiteConnection(_options.ConnectionString))
             {
                 await connection.OpenAsync();
                 using(SQLiteCommand command = new SQLiteCommand(connection))
                 {
-                    command.CommandText = "SELECT Id from Character where Name = @name";
+                    command.CommandText = "SELECT Id, AvatarUrl from Character where Name = @name";
                     command.Parameters.AddWithValue("@name", characterName);
                     command.Prepare();
 
@@ -33,8 +33,13 @@ namespace Osrsfghs.Repositories
                         while(reader.Read())
                         {
                             int id = reader.GetInt32(reader.GetOrdinal("Id"));
+                            int avatarUrlOrdinal = reader.GetOrdinal("AvatarUrl");
+                            string? avatarUrl = null;
+                            if(!reader.IsDBNull(avatarUrlOrdinal))
+                                avatarUrl = reader.GetString(reader.GetOrdinal("AvatarUrl"));
 
-                            characterId = id;
+                            character.Id = id;
+                            character.AvatarUrl = avatarUrl;
                         }
                     }
                 }
@@ -42,7 +47,7 @@ namespace Osrsfghs.Repositories
                 await connection.CloseAsync();
             }
 
-            return characterId;
+            return character;
         }
 
         public async Task<List<XpDrop>> GetAllXpDropsAndFallbackIfNoXpDropWithinCutoff(int characterId, DateTime backdatedDateTimeUtc)
@@ -125,7 +130,7 @@ namespace Osrsfghs.Repositories
                 {
                     string sqlCommand = @"
                         WITH RankedPrior AS (
-                            SELECT XpDrop.Xp, XpDrop.SkillId, XpDrop.Timestamp, Character.Name, Character.Id AS CharacterId,
+                            SELECT XpDrop.Xp, XpDrop.SkillId, XpDrop.Timestamp, Character.Name, Character.Id AS CharacterId, Character.AvatarUrl,
                                    ROW_NUMBER() OVER (
                                        PARTITION BY XpDrop.CharacterId
                                        ORDER BY XpDrop.Timestamp DESC
@@ -135,7 +140,7 @@ namespace Osrsfghs.Repositories
                             WHERE XpDrop.SkillId = 0
                               AND XpDrop.Timestamp <= @cutoffDate
                         )
-                        SELECT Xp, SkillId, Timestamp, Name, CharacterId
+                        SELECT Xp, SkillId, Timestamp, Name, CharacterId, AvatarUrl
                         FROM XpDrop
                         INNER JOIN Character ON XpDrop.CharacterId = Character.Id
                         WHERE XpDrop.SkillId = 0
@@ -143,7 +148,7 @@ namespace Osrsfghs.Repositories
 
                         UNION ALL
 
-                        SELECT Xp, SkillId, Timestamp, Name, CharacterId
+                        SELECT Xp, SkillId, Timestamp, Name, CharacterId, AvatarUrl
                         FROM RankedPrior
                         WHERE rn = 1;
                         ";
@@ -161,6 +166,11 @@ namespace Osrsfghs.Repositories
                             string characterName = reader.GetString(reader.GetOrdinal("Name"));
                             int characterId = reader.GetInt32(reader.GetOrdinal("CharacterId"));
 
+                            int avatarUrlOrdinal = reader.GetOrdinal("AvatarUrl");
+                            string? avatarUrl = null;
+                            if(!reader.IsDBNull(avatarUrlOrdinal))
+                                avatarUrl = reader.GetString(reader.GetOrdinal("AvatarUrl"));
+
                             if(!overallXpDropsDictionary.ContainsKey(characterId))
                             {
                                 XpDrop xpDrop = new XpDrop()
@@ -174,7 +184,8 @@ namespace Osrsfghs.Repositories
                                     Character = new Character()
                                     {
                                         Name = characterName,
-                                        Id = characterId
+                                        Id = characterId,
+                                        AvatarUrl = avatarUrl
                                     },
                                     XpDrops = new List<XpDrop>() { xpDrop }
                                 });
@@ -223,11 +234,17 @@ namespace Osrsfghs.Repositories
                             if (!reader.IsDBNull(discordUserIdOrdinal))
                                 discordUserId = reader.GetString(reader.GetOrdinal("DiscordUserId"));
 
+                            int avatarUrlOrdinal = reader.GetOrdinal("AvatarUrl");
+                            string? avatarUrl = null;
+                            if (!reader.IsDBNull(avatarUrlOrdinal))
+                                avatarUrl = reader.GetString(reader.GetOrdinal("AvatarUrl"));
+
                             Character character = new Character()
                             {
                                 Id = id,
                                 Name = characterName,
                                 DiscordUserId = discordUserId,
+                                AvatarUrl = avatarUrl
                             };
                             characters.Add(character);
                         }
@@ -329,7 +346,25 @@ namespace Osrsfghs.Repositories
             }
         }
 
-    public class HighScoreSQLiteRepositoryOptions
+        public async Task UpdateAvatarUrlAsync(int characterId, string avatarUrl)
+        {
+            using(SQLiteConnection connection = new SQLiteConnection(_options.ConnectionString))
+            {
+                await connection.OpenAsync();
+                using(SQLiteCommand command = new SQLiteCommand(connection))
+                {
+                    command.CommandText = "UPDATE Character SET AvatarUrl = @avatarUrl WHERE Id = @characterId";
+                    command.Parameters.AddWithValue("@avatarUrl", avatarUrl);
+                    command.Parameters.AddWithValue("@characterId", characterId);
+
+                    await command.ExecuteNonQueryAsync();
+                }
+
+                await connection.CloseAsync();
+            }
+        }
+
+        public class HighScoreSQLiteRepositoryOptions
         {
             public required string ConnectionString { get; set; }
         }

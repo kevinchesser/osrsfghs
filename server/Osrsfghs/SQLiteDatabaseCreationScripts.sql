@@ -3,8 +3,11 @@ GoonHighScores.db
 CREATE TABLE Character (
 	Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	Name TEXT(12) NOT NULL COLLATE NOCASE,
-	DiscordUserId TEXT(60)
+	DiscordUserId TEXT(60),
+	AvatarUrl TEXT(255),
 );
+
+ALTER TABLE Character ADD COLUMN AvatarUrl TEXT(255);
 
 CREATE UNIQUE INDEX character_name
 ON Character(name);
