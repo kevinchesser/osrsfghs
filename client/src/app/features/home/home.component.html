@@ -1,1 +1,42 @@
 <p>home</p>
+@if (timeSpanLeaderBoard() !== null){
+  @for (leaderBoardItem of timeSpanLeaderBoard()?.timeSpanLeaderboardItems; track leaderBoardItem.character.name){
+    <li>{{ leaderBoardItem.character.name }}</li>
+    <li>{{ leaderBoardItem.timeSpanOverallXp }}</li>
+  }
+}
+
+<!--
+  <div class="row">
+    <div class="block">
+    <div id="recentHighScoreTable" class="center">
+      <h2>Xp Gained in the Last 24hrs</h3>
+      <table class="table is-fullwidth">
+        <thead>
+          <tr>
+            <th>Pos</th>
+            <th>Player</th>
+            <th>Xp Gained</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(leaderBoardItem, index) in highScores?.timeSpanLeaderboardItems || []" :key="leaderBoardItem.character?.name ?? index">
+            <th>{{ index + 0 }}</th>
+            <td>
+            <router-link tag="td" :to="{
+              name: 'character',
+              params: {
+                name: leaderBoardItem.character?.name
+              }
+            }"
+            >
+              <span>{{ leaderBoardItem.character?.name || 'Unknown' }}</span>
+            </router-link>
+            </td>
+            <td>{{ leaderBoardItem.timeSpanOverallXp.toLocaleString() }}</td>
+          </tr>
+        </tbody>
+        </table>
+    </div>
+    </div>
+  -->

@@ -1,1 +1,45 @@
-<p>Character</p>
+@if (characterOverview(); as overview) {
+  @if (overview.character) {
+    <div class="flex gap-6 p-6">
+      <!-- LEFT: 1/3 width — stats table -->
+      <div class="w-1/3">
+        <h1 class="text-xl font-semibold text-white mb-4">Stats for {{ name() }}</h1>
+
+        <div id="characterOverviewXpTable" class="overflow-hidden rounded-lg border border-white/10">
+          <table class="w-full text-sm">
+            <thead class="bg-white/5">
+              <tr>
+                <th class="px-4 py-2 text-left font-medium text-gray-400">Skill</th>
+                <th class="px-4 py-2 text-right font-medium text-gray-400">Level</th>
+                <th class="px-4 py-2 text-right font-medium text-gray-400">Xp</th>
+                <th class="px-4 py-2 text-right font-medium text-gray-400">Rank</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/10">
+              @for (item of xpDropsBySkillMap(); track item[0]) {
+                @let skillId = item[0];
+                @let xpDrops = item[1];
+                <tr class="hover:bg-white/5 transition-colors">
+                  <td class="px-4 py-2">
+                    <div class="flex items-center gap-2">
+                      <img [src]="getSkillIconPath(skillId)" class="h-5 w-5" />
+                      <span class="text-gray-200">{{ getSkillName(skillId) }}</span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-2 text-right text-gray-200">{{ xpDrops[0]?.level }}</td>
+                  <td class="px-4 py-2 text-right text-gray-200">{{ xpDrops[0]?.xp?.toLocaleString() ?? "N/A" }}</td>
+                  <td class="px-4 py-2 text-right text-gray-400">{{ xpDrops[0]?.rank?.toLocaleString() ?? "N/A" }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT: 2/3 width — reserved for xp chart -->
+      <div class="w-2/3">
+        <!-- chart component goes here -->
+      </div>
+    </div>
+  }
+}

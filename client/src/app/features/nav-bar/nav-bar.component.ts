@@ -1,11 +1,11 @@
 import { Component, inject } from '@angular/core';
-import { RouterLink, Router } from "@angular/router";
+import { RouterLink, Router, RouterLinkActive } from "@angular/router";
 
 @Component({
 	selector: "osrsfghs-nav-bar",
 	templateUrl: './nav-bar.component.html',
 	styleUrl: './nav-bar.component.css',
- 	imports: [RouterLink]
+ 	imports: [RouterLink, RouterLinkActive]
 })
 export class NavBarComponent {
 	private readonly router: Router = inject(Router);

@@ -56,7 +56,7 @@ namespace Osrsfghs.Modules
             [SlashCommandParameter(Name = "name", Description = "Name of the character you want to fetch stats for")] string characterName)
         {
             IReadOnlyList<Character> trackedCharacterStore = _trackedCharacterStore.GetTrackedCharacters();
-            IEnumerable<Character> characterEnumerable = trackedCharacterStore.Where(x => x.Name == characterName);
+            IEnumerable<Character> characterEnumerable = trackedCharacterStore.Where(x => x.Name.Equals(characterName, StringComparison.OrdinalIgnoreCase));
             if (characterEnumerable.Count() != 1)
             {
                 await Context.Interaction.SendResponseAsync(
