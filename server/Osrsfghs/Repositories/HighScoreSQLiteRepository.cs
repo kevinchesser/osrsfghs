@@ -133,13 +133,13 @@ namespace Osrsfghs.Repositories
                             FROM XpDrop
                             INNER JOIN Character ON XpDrop.CharacterId = Character.Id
                             WHERE XpDrop.SkillId = 0
-                              AND XpDrop.Timestamp <= '2026-06-25 04:05:08.000'
+                              AND XpDrop.Timestamp <= @cutoffDate
                         )
                         SELECT Xp, SkillId, Timestamp, Name, CharacterId
                         FROM XpDrop
                         INNER JOIN Character ON XpDrop.CharacterId = Character.Id
                         WHERE XpDrop.SkillId = 0
-                          AND XpDrop.Timestamp > '2026-06-25 04:05:08.000'
+                          AND XpDrop.Timestamp > @cutoffDate
 
                         UNION ALL
 
