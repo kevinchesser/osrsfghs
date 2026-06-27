@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
 
 @Component({
 	selector: "osrsfghs-character",
@@ -6,5 +6,10 @@ import { Component } from '@angular/core';
 	styleUrl: './character.component.css'
 })
 export class CharacterComponent {
+	public name = input.required<string>();
 
+	ngOnChanges() {
+		// name is automatically populated from the :name route param
+		console.log(this.name);
+	}
 }

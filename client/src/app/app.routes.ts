@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './features/home/home.component';
 import { CharacterComponent } from './features/character/character.component';
-import { LeaderboardComponent } from './features/leaderboard/leaderboard.component';
+import { HighScoresComponent } from './features/highscores/highscores.component';
 
 export const routes: Routes = [
 	{
@@ -10,13 +10,13 @@ export const routes: Routes = [
 		title: ''
 	},
 	{
-		path: '',
+		path: 'character/:name',
 		component: CharacterComponent,
 		title: ''
 	},
 	{
-		path: '',
-		component: LeaderboardComponent,
-		title: ''
+		path: 'highScores',
+		component: HighScoresComponent,
+		title: 'HighScores'
 	}
 ];
