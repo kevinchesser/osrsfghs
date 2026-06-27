@@ -33,46 +33,27 @@ export class CharacterComponent {
     return this.xpDropsBySkillMap().get(this.selectedSkillId()) ?? [];
   });
 
-  public chartData = computed<ChartData<'line', { x: Date; y: number }[]>>(() => {
-    const sorted = [...this.selectedSkillDrops()].sort((a, b) =>
-      new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime()
-    );
-
-    return {
-      datasets: [{
-        label: this.getSkillName(this.selectedSkillId()),
-        data: sorted.map(d => ({
-          x: toLocalDate(d.timeStamp as unknown as string),
-          y: d.xp,
-        })),
-        borderColor: 'rgb(99, 102, 241)',
-        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-        tension: 0.2,
-        fill: true,
-      }],
-    };
-  });
-/*
   public chartData = computed<ChartConfiguration['data']>(() => {
-    const sorted = [...this.selectedSkillDrops()].sort((a, b) =>
-      new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime()
-    );
+  const sorted = [...this.selectedSkillDrops()].sort((a, b) =>
+    new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime()
+  );
 
-    return {
-      datasets: [{
-        label: this.getSkillName(this.selectedSkillId()),
-        data: sorted.map(d => ({
-          x: toLocalDate(d.timeStamp as unknown as string),
-          y: d.xp,
-        })),
-        borderColor: 'rgb(99, 102, 241)', // indigo-500
-        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-        tension: 0.2,
-        fill: true,
-      }],
-    };
-  });
-*/
+  const data: ChartData<'line', { x: Date; y: number }[]> = {
+    datasets: [{
+      label: this.getSkillName(this.selectedSkillId()),
+      data: sorted.map(d => ({
+        x: toLocalDate(d.timeStamp as unknown as string),
+        y: d.xp,
+      })),
+      borderColor: 'rgb(99, 102, 241)',
+      backgroundColor: 'rgba(99, 102, 241, 0.1)',
+      tension: 0.2,
+      fill: true,
+    }],
+  };
+
+  return data as unknown as ChartConfiguration['data'];
+});
 
   public chartOptions: ChartConfiguration['options'] = {
     responsive: true,
