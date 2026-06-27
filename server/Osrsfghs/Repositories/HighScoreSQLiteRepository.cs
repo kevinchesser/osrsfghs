@@ -124,16 +124,28 @@ namespace Osrsfghs.Repositories
                 using(SQLiteCommand command = new SQLiteCommand(connection))
                 {
                     string sqlCommand = @"
-                        Select XpDrop.Xp, XpDrop.SkillId, XpDrop.Timestamp, Character.Name, Character.Id as CharacterId from XpDrop INNER JOIN Character ON XpDrop.CharacterId = Character.Id
-                        WHERE XpDrop.Timestamp > @cutoffDate AND XpDrop.SkillId = 0
+                        WITH RankedPrior AS (
+                            SELECT XpDrop.Xp, XpDrop.SkillId, XpDrop.Timestamp, Character.Name, Character.Id AS CharacterId,
+                                   ROW_NUMBER() OVER (
+                                       PARTITION BY XpDrop.CharacterId
+                                       ORDER BY XpDrop.Timestamp DESC
+                                   ) AS rn
+                            FROM XpDrop
+                            INNER JOIN Character ON XpDrop.CharacterId = Character.Id
+                            WHERE XpDrop.SkillId = 0
+                              AND XpDrop.Timestamp <= '2026-06-25 04:05:08.000'
+                        )
+                        SELECT Xp, SkillId, Timestamp, Name, CharacterId
+                        FROM XpDrop
+                        INNER JOIN Character ON XpDrop.CharacterId = Character.Id
+                        WHERE XpDrop.SkillId = 0
+                          AND XpDrop.Timestamp > '2026-06-25 04:05:08.000'
 
                         UNION ALL
 
-                        Select XpDrop.Xp, XpDrop.SkillId, XpDrop.Timestamp, Character.Name, Character.Id as CharacterId from XpDrop INNER JOIN Character ON XpDrop.CharacterId = Character.Id
-                        WHERE XpDrop.Timestamp = (
-                        SELECT MAX(XpDrop.Timestamp)
-                        FROM XpDrop
-                        WHERE XpDrop.Timestamp <= @cutoffDate) AND XpDrop.SkillId = 0;
+                        SELECT Xp, SkillId, Timestamp, Name, CharacterId
+                        FROM RankedPrior
+                        WHERE rn = 1;
                         ";
                     command.CommandText = sqlCommand;
                     command.Parameters.AddWithValue("@cutoffDate", backdatedDateTimeUtc);

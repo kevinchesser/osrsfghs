@@ -8,12 +8,15 @@ namespace Osrsfghs.Services
     {
         private readonly ILogger<HighScoreService> _logger;
         private readonly IHighScoreRepository _highScoreRepository;
+        private readonly IOldSchoolRunescapeApiClient _oldSchoolRunescapeApiClient;
         private static readonly TimeSpan OneWeekTimeSpan = TimeSpan.FromDays(7);
 
-        public HighScoreService(ILogger<HighScoreService> logger, IHighScoreRepository highScoreRepository)
+        public HighScoreService(ILogger<HighScoreService> logger, IHighScoreRepository highScoreRepository,
+            IOldSchoolRunescapeApiClient oldSchoolRunescapeApiClient)
         {
             _logger = logger;
             _highScoreRepository = highScoreRepository;
+            _oldSchoolRunescapeApiClient = oldSchoolRunescapeApiClient;
         }
 
         public async Task<List<Character>> GetCharacters()
@@ -114,6 +117,13 @@ namespace Osrsfghs.Services
                 _logger.LogInformation("Record {numberOf} XpDrops for {CharacterId}", xpDropsToRecord.Count, character.Id);
                 await _highScoreRepository.SaveXpDrops(xpDropsToRecord, processingTime);
             }
+        }
+
+        public async Task ProcessHighScoresForCharacter(Character character, string processingTime)
+        {
+            OsrsCharacterStats osrsCharacterStats = await _oldSchoolRunescapeApiClient.GetOsrsCharacterStats(character.Name);
+            Dictionary<int, OsrsSkill> osrsCharacterStatDictionary = osrsCharacterStats.Skills.ToDictionary(x => x.Id, y => y);
+            await RecordXpDropsIfNecessary(character, osrsCharacterStatDictionary, processingTime);
         }
     }
 }

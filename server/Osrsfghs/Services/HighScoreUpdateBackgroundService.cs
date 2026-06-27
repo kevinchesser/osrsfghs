@@ -8,17 +8,15 @@ namespace Osrsfghs.Services
     {
         private readonly ILogger<HighScoreUpdateBackgroundService> _logger;
         private readonly HighScoreUpdateBackgroundServiceOptions _options;
-        private readonly IOldSchoolRunescapeApiClient _oldSchoolRunescapeApiClient;
         private readonly ITrackedCharacterStore _trackedCharacterStore;
         private readonly IHighScoreService _highScoreService;
         private int _executionCount;
 
         public HighScoreUpdateBackgroundService(ILogger<HighScoreUpdateBackgroundService> logger, IOptions<HighScoreUpdateBackgroundServiceOptions> options,
-            IOldSchoolRunescapeApiClient oldSchoolRunescapeApiClient, ITrackedCharacterStore trackedCharacterStore, IHighScoreService highScoreService)
+            ITrackedCharacterStore trackedCharacterStore, IHighScoreService highScoreService)
         {
             _logger = logger;
             _options = options.Value;
-            _oldSchoolRunescapeApiClient = oldSchoolRunescapeApiClient;
             _trackedCharacterStore = trackedCharacterStore;
             _highScoreService = highScoreService;
         }
@@ -56,29 +54,37 @@ namespace Osrsfghs.Services
             async Task DoWorkAsync()
             {
                 string processingTime = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"); //ISO-8601 format
-                foreach(Character character in _trackedCharacterStore.GetTrackedCharacters())
-                {
-                    try
-                    {
-                        await ProcessHighScoresForCharacter(character, processingTime);
-                    }
-                    catch(Exception ex)
-                    {
-                        _logger.LogError(ex, "Exception when processing highscores for {character}", character.Name);
-                    }
-                }
+                using SemaphoreSlim semaphore = new SemaphoreSlim(initialCount: 5);
+
+                IEnumerable<Task> tasks = _trackedCharacterStore.GetTrackedCharacters()
+                    .Select(character => ProcessCharacterSafeAsync(character, processingTime, semaphore));
+
+                await Task.WhenAll(tasks);
             }
 
+            async Task ProcessCharacterSafeAsync(Character character, string processingTime, SemaphoreSlim semaphore)
+            {
+                await semaphore.WaitAsync();
+                try
+                {
+                    await ProcessHighScoresForCharacter(character, processingTime);
+                }
+                catch(Exception ex)
+                {
+                    _logger.LogError(ex, "Exception when processing highscores for {character}", character.Name);
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            }
         }
 
         private async Task ProcessHighScoresForCharacter(Character character, string processingTime)
         {
             int count = Interlocked.Increment(ref _executionCount);
             _logger.LogInformation("ProcessHighScoresForCharacter: {name} {executionCount}", character.Name, count);
-
-            OsrsCharacterStats osrsCharacterStats = await _oldSchoolRunescapeApiClient.GetOsrsCharacterStats(character.Name);
-            Dictionary<int, OsrsSkill> osrsCharacterStatDictionary = osrsCharacterStats.Skills.ToDictionary(x => x.Id, y => y);
-            await _highScoreService.RecordXpDropsIfNecessary(character, osrsCharacterStatDictionary, processingTime);
+            await _highScoreService.ProcessHighScoresForCharacter(character, processingTime);
         }
 
         public class HighScoreUpdateBackgroundServiceOptions
