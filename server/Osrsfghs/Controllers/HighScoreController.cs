@@ -41,5 +41,12 @@ namespace Osrsfghs.Controllers
             TimespanXpLeaderboardViewModel timespanXpLeaderboardViewModel = await _highScoreService.GetLastXTimeSpanOverallXpLeadboard(TimeSpan.FromHours(24));
             return Ok(timespanXpLeaderboardViewModel);
         }
+
+        [HttpGet("bySkill")]
+        public async Task<IActionResult> GetHighScoresBySkill()
+        {
+            HighScoresViewModel highScoreViewModel = await _highScoreService.GetHighScoresBySkill();
+            return Ok(highScoreViewModel);
+        }
     }
 }

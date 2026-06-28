@@ -26,3 +26,14 @@ export interface Character {
     discordUserId: string
     avatarUrl?: string // populate this once the backend job above is in place
 }
+
+export interface HighScoresViewModel {
+  highScoresBySkill: Record<number, HighScores[]>
+}
+
+export interface HighScores{
+  character: Character
+  xp: number
+  level: number
+  rank: number
+}

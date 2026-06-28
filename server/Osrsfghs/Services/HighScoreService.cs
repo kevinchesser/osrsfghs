@@ -126,5 +126,11 @@ namespace Osrsfghs.Services
         {
             await _highScoreRepository.UpdateAvatarUrlAsync(characterId, avatarUrl);
         }
+
+        public async Task<HighScoresViewModel> GetHighScoresBySkill()
+        {
+            Dictionary<int, List<HighScores>> highScoresForAllSkills = await _highScoreRepository.GetHighScoresForAllSkills();
+            return new HighScoresViewModel() { HighScoresBySkill = highScoresForAllSkills};
+        }
     }
 }

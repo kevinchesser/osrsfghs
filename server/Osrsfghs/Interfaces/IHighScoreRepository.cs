@@ -12,5 +12,6 @@ namespace Osrsfghs.Interfaces
         Task<List<XpDrop>> GetAllXpDropsAndFallbackIfNoXpDropWithinCutoff(int characterId, DateTime backdatedDateTimeUtc);
         Task<Character> GetCharacter(string characterName);
         Task UpdateAvatarUrlAsync(int characterId, string avatarUrl);
+        Task<Dictionary<int, List<HighScores>>> GetHighScoresForAllSkills();
     }
 }

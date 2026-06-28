@@ -15,5 +15,6 @@ namespace Osrsfghs.Interfaces
         Task<CharacterOverview> GetCharacterOverview(string characterName);
         Task ProcessHighScoresForCharacter(Character character, string processingTime);
         Task UpdateAvatarUrlAsync(int characterId, string avatarUrl);
+        Task<HighScoresViewModel> GetHighScoresBySkill();
     }
 }

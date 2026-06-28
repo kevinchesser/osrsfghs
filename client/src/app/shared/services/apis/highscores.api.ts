@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CharacterOverview, TimeSpanLeaderboard } from '../../models/high-scores.models';
+import { CharacterOverview, HighScoresViewModel, TimeSpanLeaderboard } from '../../models/high-scores.models';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +15,10 @@ export class HighScoreApiService {
 
   getCharacterOverview(characterName: string): Observable<CharacterOverview> {
     return this.httpClient.get<CharacterOverview>(`https://localhost:7071/HighScore/${characterName}`);
+  }
+
+  getHighScoresBySkill(): Observable<HighScoresViewModel> {
+    return this.httpClient.get<HighScoresViewModel>('https://localhost:7071/HighScore/bySkill');
   }
 
   /*

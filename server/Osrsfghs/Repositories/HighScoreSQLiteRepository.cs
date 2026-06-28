@@ -364,6 +364,72 @@ namespace Osrsfghs.Repositories
             }
         }
 
+        public async Task<Dictionary<int, List<HighScores>>> GetHighScoresForAllSkills()
+        {
+            Dictionary<int, List<HighScores>> highScoresBySkill = new Dictionary<int, List<HighScores>>();
+
+            using(SQLiteConnection connection = new SQLiteConnection(_options.ConnectionString))
+            {
+                await connection.OpenAsync();
+                using(SQLiteCommand command = new SQLiteCommand(connection))
+                {
+                    command.CommandText = @"
+                        SELECT XpDrop.SkillId, XpDrop.Xp, XpDrop.Level, XpDrop.Rank,
+                               Character.Id AS CharacterId, Character.Name, Character.DiscordUserId, Character.AvatarUrl
+                        FROM XpDrop
+                        INNER JOIN Character ON XpDrop.CharacterId = Character.Id
+                        INNER JOIN (
+                            SELECT CharacterId, SkillId, MAX(Timestamp) AS MaxTimestamp
+                            FROM XpDrop
+                            GROUP BY CharacterId, SkillId
+                        ) AS Latest
+                        ON XpDrop.CharacterId = Latest.CharacterId
+                        AND XpDrop.SkillId = Latest.SkillId
+                        AND XpDrop.Timestamp = Latest.MaxTimestamp
+                        ORDER BY XpDrop.SkillId, XpDrop.Xp DESC";
+                    command.Prepare();
+
+                    using(SQLiteDataReader reader = command.ExecuteReader())
+                    {
+                        while(reader.Read())
+                        {
+                            int skillId = reader.GetInt32(reader.GetOrdinal("SkillId"));
+
+                            HighScores highScore = new HighScores()
+                            {
+                                Character = new Character()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("CharacterId")),
+                                    Name = reader.GetString(reader.GetOrdinal("Name")),
+                                    DiscordUserId = reader.IsDBNull(reader.GetOrdinal("DiscordUserId"))
+                                        ? null
+                                        : reader.GetString(reader.GetOrdinal("DiscordUserId")),
+                                    AvatarUrl = reader.IsDBNull(reader.GetOrdinal("AvatarUrl"))
+                                        ? null
+                                        : reader.GetString(reader.GetOrdinal("AvatarUrl"))
+                                },
+                                Xp = reader.GetInt32(reader.GetOrdinal("Xp")),
+                                Level = reader.GetInt32(reader.GetOrdinal("Level")),
+                                Rank = reader.GetInt32(reader.GetOrdinal("Rank"))
+                            };
+
+                            if(!highScoresBySkill.TryGetValue(skillId, out List<HighScores>? characterHighScores))
+                            {
+                                characterHighScores = new List<HighScores>();
+                                highScoresBySkill[skillId] = characterHighScores;
+                            }
+
+                            characterHighScores.Add(highScore);
+                        }
+                    }
+                }
+
+                await connection.CloseAsync();
+            }
+
+            return highScoresBySkill;
+        }
+
         public class HighScoreSQLiteRepositoryOptions
         {
             public required string ConnectionString { get; set; }
